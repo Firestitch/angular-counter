@@ -30,16 +30,31 @@ partial / html:
 
 'use strict';
 
-angular.module('Firestitch.angular-counter', []).directive('fsCounter', ['$timeout', function ($timeout) {
-
+var counterModule = angular.module('Firestitch.angular-counter', []);
+counterModule.controller('counterCtrl', ['$scope', function ($scope) {
+  var counterCtrl = this;
+  counterCtrl.hello = function () {
+    console.log('hey there');
+  };
+}]);
+counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         scope: {
             value: '=value'
         },
-        template: '<div class="fs-counter input-group" ng-class="addclass" ng-style="width"><span class="input-group-btn" ng-click="minus()"><button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button></span><input type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly"><span class="input-group-btn" ng-click="plus()"><button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></span></div>',
+        controller: 'counterCtrl as counterCtrl',
+        template: '<div class="fs-counter input-group" ng-class="addclass" ng-style="width">\
+           <span class="input-group-btn" ng-click="minus()">\
+              <button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>\
+            </span>\
+            <input data-test-id="counter-input" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly">\
+            <span class="input-group-btn" ng-click="plus()">\
+              <button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>\
+            </span>\
+          </div>',
         replace: true,
-        link: function(scope, element, attrs) {
+        link: function(scope, element, attrs, ctrl) {
             var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min)),
                 max = (angular.isUndefined(attrs.max) ? void 0 : parseInt(attrs.max)),
                 step = (angular.isUndefined(attrs.step) || parseInt(attrs.step) === 0 ? 1 : parseInt(attrs.step)),
