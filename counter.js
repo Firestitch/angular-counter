@@ -33,9 +33,10 @@ partial / html:
 var counterModule = angular.module('Firestitch.angular-counter', []);
 counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   var counterCtrl = this;
-  counterCtrl.hello = function () {
-    console.log('hey there');
-  };
+  /**
+   * Sets the value as an integer. If the value cannot be parsed,
+   * i.e. returns NaN, then the min value or 0 will be used instead.
+   */
   counterCtrl.setValue = function(val, min, max) {
     var parsedVal = parseInt(val);
     if (!isNaN(parsedVal)) {
@@ -72,35 +73,11 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
             '</span>',
           '</div>'].join(''),
         replace: true,
-        link: function(scope, element, attrs, ctrl) {
+        link: function(scope, element, attrs, counterCtrl) {
             var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min)),
                 max = (angular.isUndefined(attrs.max) ? void 0 : parseInt(attrs.max)),
                 step = (angular.isUndefined(attrs.step) || parseInt(attrs.step) === 0 ? 1 : parseInt(attrs.step)),
-                setValue,
                 changeDelay;
-
-            /**
-             * Sets the value as an integer. If the value cannot be parsed,
-             * i.e. returns NaN, then the min value or 0 will be used instead.
-             */
-            setValue = function(val) {
-                var parsedVal = parseInt(val);
-                if (!isNaN(parsedVal)) {
-                    if (min !== undefined && min > parsedVal) {
-                        parsedVal = min;
-                        return parsedVal;
-                    }
-                    if (max !== undefined && max < parsedVal) {
-                        parsedVal = max;
-                        return parsedVal;
-                    }
-                    return parsedVal;
-                } else {
-                    console.log('parsedValue must parse to a number.');
-                    parsedVal = min || 0;
-                    return parsedVal;
-                }
-            };
 
             /**
              * Confirm the value attribute exists on the element
@@ -115,20 +92,20 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
             scope.readonly = (angular.isUndefined(attrs.editable) ? true : false);
             scope.addclass = (angular.isUndefined(attrs.addclass) ? null : attrs.addclass);
             scope.width = (angular.isUndefined(attrs.width) ? {} : {width:attrs.width});
-            scope.value = setValue(scope.value);
+            scope.value = counterCtrl.setValue(scope.value, min, max);
 
             /**
              * Decrement the value and make sure we stay within the limits, if defined.
              */
             scope.minus = function() {
-                scope.value = setValue(scope.value - step);
+                scope.value = counterCtrl.setValue(scope.value - step, min, max);
             };
 
             /**
              * Increment the value and make sure we stay within the limits, if defined.
              */
             scope.plus = function() {
-                scope.value = setValue(scope.value + step);
+                scope.value = counterCtrl.setValue(scope.value + step, min, max);
             };
 
             /**
@@ -138,7 +115,7 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
              */
             scope.changed = function() {
                 changeDelay = $timeout(function (){
-                    scope.value =  setValue(scope.value);
+                    scope.value =  counterCtrl.setValue(scope.value, min, max);
                 }, 1000, true);
             };
 
@@ -148,7 +125,7 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
              * enter the correct values from within the restrictions.
              */
             scope.blurred = function() {
-                scope.value =  setValue(scope.value);
+                scope.value =  counterCtrl.setValue(scope.value, min, max);
             };
         }
     };
