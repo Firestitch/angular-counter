@@ -33,13 +33,34 @@ partial / html:
 var counterModule = angular.module('Firestitch.angular-counter', []);
 counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   var counterCtrl = this;
+
+  counterCtrl.parse = function (n) {
+    var testParse = parseInt(n, 10);
+    return (testParse === 0 && !(n === '0' || n === 0)) ? NaN : testParse;
+  };
+
+  counterCtrl.isValidNum = function () {
+    var vals = [].concat(Array.prototype.slice.call(arguments, 0));
+    return vals.reduce(function (c, val) {
+      var parsedVal = counterCtrl.parse(val);
+      return !isNaN(parsedVal);
+    }, vals.length ? true : false);
+  };
   /**
    * Sets the value as an integer. If the value cannot be parsed,
    * i.e. returns NaN, then the min value or 0 will be used instead.
    */
   counterCtrl.setValue = function(val, min, max) {
-    var parsedVal = parseInt(val, 10);
-    if (!isNaN(parsedVal)) {
+    var parsedVal = counterCtrl.parse(val);
+    /* Invalid case: if the prased value is NaN or
+        if the input value was not 0 but parsed as zero
+        for example: if input: '0x9', then parseInt(input, 10) -> 0
+    */
+    if (!counterCtrl.isValidNum(val)) {
+      console.log('parsedValue must parse to a number.');
+      parsedVal = min || 0;
+      return parsedVal;
+    } else {
       if (min !== undefined && min > parsedVal) {
         parsedVal = min;
         return parsedVal;
@@ -48,10 +69,6 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
         parsedVal = max;
         return parsedVal;
       }
-      return parsedVal;
-    } else {
-      console.log('parsedValue must parse to a number.');
-      parsedVal = min || 0;
       return parsedVal;
     }
   };
@@ -74,7 +91,7 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
           '</div>'].join(''),
         replace: true,
         link: function(scope, element, attrs, counterCtrl) {
-            var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min)),
+            var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min, 10)),
                 max = (angular.isUndefined(attrs.max) ? void 0 : parseInt(attrs.max)),
                 step = (angular.isUndefined(attrs.step) || parseInt(attrs.step) === 0 ? 1 : parseInt(attrs.step)),
                 changeDelay;

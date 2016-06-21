@@ -25,6 +25,31 @@ describe('Counter Directive:', function() {
     });
   });
 
+  describe('when initialized with invalid number that parses to 0', function () {
+    var element, input, $scope;
+    beforeEach(function () {
+      $scope = $rootScope.$new();
+      $scope.sample = {
+        value: '0xa'
+      };
+    });
+
+    it('should set the value to 0 if not min is given', function() {
+      element = $compile('<div fs-counter value="sample.value"></div>')($scope);
+      $rootScope.$digest();
+      input = element[0].querySelectorAll("[data-test-id=counter-input]");
+      expect(input[0].value).toBe('0');
+    });
+
+    it('should set the value to min if invalid input parses to 0 and min is given', function() {
+      element = $compile('<div fs-counter value="sample.value" min="10"></div>')($scope);
+      $rootScope.$digest();
+      input = element[0].querySelectorAll("[data-test-id=counter-input]");
+      expect(input[0].value).toBe('10');
+    });
+
+  });
+
   describe('when initialized with correct value:', function () {
     var element, input, $scope;
     beforeEach(function () {
@@ -69,6 +94,12 @@ describe('Counter Directive:', function() {
       expect(element.isolateScope().value).toBe(4);
     });
 
+    it('should set the value to value if min is invalid', function() {
+      var element = $compile('<div fs-counter value="sample.value" min="blah"></div>')($scope);
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(5);
+    });
+
   });
 
   describe('when using the plus or minus button', function () {
@@ -94,6 +125,38 @@ describe('Counter Directive:', function() {
       angular.element(decButton).triggerHandler('click');
       $rootScope.$digest();
       expect(element.isolateScope().value).toBe(4);
+    });
+
+    it('should not decrement the value beyond the min value', function() {
+      var element = $compile('<div fs-counter value="sample.value" min="4"></div>')($scope);
+      var decButton = element[0].querySelectorAll("[data-test-id=dec-button]");
+      angular.element(decButton).triggerHandler('click');
+      angular.element(decButton).triggerHandler('click');
+      angular.element(decButton).triggerHandler('click');
+      angular.element(decButton).triggerHandler('click');
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(4);
+    });
+
+    xit('should not define a min value if the min value is invalid', function() {
+      $scope.sample.value = 1;
+      var element = $compile('<div fs-counter value="sample.value" min="0xa"></div>')($scope);
+      var decButton = element[0].querySelectorAll("[data-test-id=dec-button]");
+      angular.element(decButton).triggerHandler('click');
+      angular.element(decButton).triggerHandler('click');
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(-1);
+    });
+
+    it('should not inc the value beyond the max value', function() {
+      var element = $compile('<div fs-counter value="sample.value" max="6"></div>')($scope);
+      var incButton = element[0].querySelectorAll("[data-test-id=inc-button]");
+      angular.element(incButton).triggerHandler('click');
+      angular.element(incButton).triggerHandler('click');
+      angular.element(incButton).triggerHandler('click');
+      angular.element(incButton).triggerHandler('click');
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(6);
     });
 
   });
