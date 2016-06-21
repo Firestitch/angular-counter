@@ -1,10 +1,12 @@
 describe('Counter Directive:', function() {
-  var $compile, $rootScope;
+  var $compile, $rootScope, $timeout;
   beforeEach(module('Firestitch.angular-counter'));
 
-  beforeEach(inject(function(_$compile_, _$rootScope_) {
+  beforeEach(inject(function(_$compile_, _$rootScope_, _$timeout_) {
+    // window.jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
     $compile = _$compile_;
     $rootScope = _$rootScope_;
+    $timeout = _$timeout_;
   }));
 
   describe('when initialized with invalid values', function () {
@@ -92,6 +94,33 @@ describe('Counter Directive:', function() {
       angular.element(decButton).triggerHandler('click');
       $rootScope.$digest();
       expect(element.isolateScope().value).toBe(4);
+    });
+
+  });
+
+  describe('when the input is editable or not:', function () {
+    var $scope;
+    beforeEach(function () {
+      $scope = $rootScope.$new();
+      $scope.sample = {
+        value: 5
+      };
+    });
+
+    it('should set the value given by the user if editable', function() {
+      var element = $compile('<div fs-counter value="sample.value" editable></div>')($scope);
+      var input = element[0].querySelectorAll("[data-test-id=counter-input]");
+      angular.element(input).val('25').triggerHandler('input');
+      $rootScope.$digest();
+      $timeout.flush();
+      expect(element.isolateScope().value).toBe(25);
+    });
+
+    it('should be readonly if not editable', function() {
+      var element = $compile('<div fs-counter value="sample.value"></div>')($scope);
+      var input = element[0].querySelectorAll("[data-test-id=counter-input]");
+      $rootScope.$digest();
+      expect(input[0].readonly).toBe(true);
     });
 
   });
