@@ -7,35 +7,41 @@ describe('Counter Controller:', function() {
     underTest = $controller('counterCtrl', { $scope: {} });
   }));
 
-  describe('The `isValidNum` method', function () {
+  describe('The `isValidNumString` method', function () {
     it('should be valid for valid inputs', function () {
-      expect(underTest.isValidNum('1')).toBe(true);
-      expect(underTest.isValidNum('-1')).toBe(true);
-      expect(underTest.isValidNum(1)).toBe(true);
-      expect(underTest.isValidNum(-1)).toBe(true);
-      expect(underTest.isValidNum(0)).toBe(true);
+      expect(underTest.isValidNumString('1')).toBe(true);
+      expect(underTest.isValidNumString('-1')).toBe(true);
+      expect(underTest.isValidNumString(1)).toBe(true);
+      expect(underTest.isValidNumString(-1)).toBe(true);
+      expect(underTest.isValidNumString(0)).toBe(true);
+      expect(underTest.isValidNumString(3.4)).toBe(true);
     });
     it('should return false for invalid input', function () {
-      expect(underTest.isValidNum()).toBe(false);
-      expect(underTest.isValidNum(undefined)).toBe(false);
-      expect(underTest.isValidNum('')).toBe(false);
-      expect(underTest.isValidNum(false)).toBe(false);
-      expect(underTest.isValidNum(NaN)).toBe(false);
-      expect(underTest.isValidNum('0xa')).toBe(false);
-      expect(underTest.isValidNum([])).toBe(false);
-      expect(underTest.isValidNum({})).toBe(false);
-      expect(underTest.isValidNum(null)).toBe(false);
-      expect(underTest.isValidNum('blabla')).toBe(false);
+      expect(underTest.isValidNumString()).toBe(false);
+      expect(underTest.isValidNumString(undefined)).toBe(false);
+      expect(underTest.isValidNumString('')).toBe(false);
+      expect(underTest.isValidNumString(false)).toBe(false);
+      expect(underTest.isValidNumString(NaN)).toBe(false);
+      expect(underTest.isValidNumString('0xa')).toBe(false);
+      expect(underTest.isValidNumString([])).toBe(false);
+      expect(underTest.isValidNumString({})).toBe(false);
+      expect(underTest.isValidNumString(null)).toBe(false);
+      expect(underTest.isValidNumString('blabla')).toBe(false);
+      expect(underTest.isValidNumString('2x')).toBe(false);
     });
     it('should return false if input is false positive', function () {
-      expect(underTest.isValidNum('0xa')).toBe(false);
+      expect(underTest.isValidNumString('0xa')).toBe(false);
     });
     it('should return true if all input values are valid', function () {
-      expect(underTest.isValidNum('1', '2', '3')).toBe(true);
+      expect(underTest.isValidNumString('1', '2', '3')).toBe(true);
+      expect(underTest.isValidNumString('1', 2, '3', -1, 0, 5, 100, '15902')).toBe(true);
     });
     it('should return false if at least of input is invalid', function () {
-      expect(underTest.isValidNum('1', '2', NaN)).toBe(false);
-      expect(underTest.isValidNum('1', 2, NaN)).toBe(false);
+      expect(underTest.isValidNumString('1', '2', NaN)).toBe(false);
+      expect(underTest.isValidNumString('1', 2, '0xa')).toBe(false);
+      expect(underTest.isValidNumString(1, 5, NaN)).toBe(false);
+      expect(underTest.isValidNumString(1, NaN, 2)).toBe(false);
+      expect(underTest.isValidNumString('blah', '0.5', 2)).toBe(false);
     });
   });
   describe('The `setValue` method', function () {

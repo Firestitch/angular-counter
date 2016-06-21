@@ -35,15 +35,19 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   var counterCtrl = this;
 
   counterCtrl.parse = function (n) {
-    var testParse = parseInt(n, 10);
-    return (testParse === 0 && !(n === '0' || n === 0)) ? NaN : testParse;
+    var invalidInput  = {
+      hex: ~String(n).indexOf('0x'),
+      falsy: !n && n !== 0,
+      isObj: typeof n === 'object'
+    };
+    return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Math.floor(Number(n));
   };
 
-  counterCtrl.isValidNum = function () {
+  counterCtrl.isValidNumString = function () {
     var vals = [].concat(Array.prototype.slice.call(arguments, 0));
     return vals.reduce(function (c, val) {
       var parsedVal = counterCtrl.parse(val);
-      return !isNaN(parsedVal);
+      return c && !isNaN(parsedVal);
     }, vals.length ? true : false);
   };
   /**
@@ -56,11 +60,7 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
         if the input value was not 0 but parsed as zero
         for example: if input: '0x9', then parseInt(input, 10) -> 0
     */
-    if (!counterCtrl.isValidNum(val)) {
-      console.log('parsedValue must parse to a number.');
-      parsedVal = min || 0;
-      return parsedVal;
-    } else {
+    if (counterCtrl.isValidNumString(val)) {
       if (min !== undefined && min > parsedVal) {
         parsedVal = min;
         return parsedVal;
@@ -69,6 +69,10 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
         parsedVal = max;
         return parsedVal;
       }
+      return parsedVal;
+    } else {
+      console.log('parsedValue must parse to a number.');
+      parsedVal = min || 0;
       return parsedVal;
     }
   };
@@ -91,9 +95,9 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
           '</div>'].join(''),
         replace: true,
         link: function(scope, element, attrs, counterCtrl) {
-            var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min, 10)),
-                max = (angular.isUndefined(attrs.max) ? void 0 : parseInt(attrs.max)),
-                step = (angular.isUndefined(attrs.step) || parseInt(attrs.step) === 0 ? 1 : parseInt(attrs.step)),
+            var min = (angular.isUndefined(attrs.min) ? void 0 : counterCtrl.parse(attrs.min)),
+                max = (angular.isUndefined(attrs.max) ? void 0 : counterCtrl.parse(attrs.max)),
+                step = (angular.isUndefined(attrs.step) || counterCtrl.parse(attrs.step) === 0 ? 1 : counterCtrl.parse(attrs.step)),
                 changeDelay;
 
             /**
