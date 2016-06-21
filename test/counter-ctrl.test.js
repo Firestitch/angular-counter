@@ -48,6 +48,7 @@ describe('Counter Controller:', function() {
       expect(underTest.isValidNumString('blah', '0.5', 2)).toBe(false);
     });
   });
+
   describe('The `setValue` method', function () {
     it('should set the value correctly if input is valid number string', function() {
       expect(underTest.setValue('1')).toBe(1);
@@ -93,6 +94,5 @@ describe('Counter Controller:', function() {
     it('should not set max if the value is invalid', function() {
       expect(underTest.setValue('5', 0, NaN)).toBe(5);
     });
-
   });
 });

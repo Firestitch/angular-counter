@@ -3,7 +3,6 @@ describe('Counter Directive:', function() {
   beforeEach(module('Firestitch.angular-counter'));
 
   beforeEach(inject(function(_$compile_, _$rootScope_, _$timeout_) {
-    // window.jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
     $compile = _$compile_;
     $rootScope = _$rootScope_;
     $timeout = _$timeout_;
@@ -47,7 +46,6 @@ describe('Counter Directive:', function() {
       input = element[0].querySelectorAll("[data-test-id=counter-input]");
       expect(input[0].value).toBe('10');
     });
-
   });
 
   describe('when initialized with correct value:', function () {
@@ -99,7 +97,6 @@ describe('Counter Directive:', function() {
       $rootScope.$digest();
       expect(element.isolateScope().value).toBe(5);
     });
-
   });
 
   describe('when using the plus or minus button', function () {
@@ -168,7 +165,6 @@ describe('Counter Directive:', function() {
       $rootScope.$digest();
       expect(element.isolateScope().value).toBe(6);
     });
-
   });
 
   describe('when the input is editable or not:', function () {
@@ -195,7 +191,6 @@ describe('Counter Directive:', function() {
       $rootScope.$digest();
       expect(input[0].readonly).toBe(true);
     });
-
   });
 
   describe('when addClass options is specified with class names:', function () {
@@ -214,7 +209,6 @@ describe('Counter Directive:', function() {
       expect(angular.element(wrapper).hasClass('some-class')).toBe(true);
       expect(angular.element(wrapper).hasClass('other-class')).toBe(true);
     });
-
   });
 
   describe('when step option is specified:', function () {
@@ -241,7 +235,6 @@ describe('Counter Directive:', function() {
       $rootScope.$digest();
       expect(element.isolateScope().value).toBe(3);
     });
-
   });
 
 });

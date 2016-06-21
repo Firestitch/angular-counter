@@ -34,6 +34,10 @@ var counterModule = angular.module('Firestitch.angular-counter', []);
 counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   var counterCtrl = this;
 
+  /*
+   * Parses the string/number input. Returns an integer
+   * if the input is valid, otherwise, return NaN.
+   */
   counterCtrl.parse = function (n) {
     n = String(n).trim();
     var invalidInput  = {
@@ -44,6 +48,11 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
     return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Math.floor(Number(n));
   };
 
+  /*
+    * checks if the given inputs are valid
+    * number/number strings. If they are valid, return true,
+    * otherwise return false.
+   */
   counterCtrl.isValidNumString = function () {
     var vals = [].concat(Array.prototype.slice.call(arguments, 0));
     return vals.reduce(function (c, val) {
@@ -51,16 +60,13 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
       return c && !isNaN(parsedVal);
     }, vals.length ? true : false);
   };
+
   /**
    * Sets the value as an integer. If the value cannot be parsed,
    * i.e. returns NaN, then the min value or 0 will be used instead.
    */
   counterCtrl.setValue = function(val, min, max) {
     var parsedVal = counterCtrl.parse(val);
-    /* Invalid case: if the prased value is NaN or
-        if the input value was not 0 but parsed as zero
-        for example: if input: '0x9', then parseInt(input, 10) -> 0
-    */
     if (counterCtrl.isValidNumString(val)) {
       if (min !== undefined && min > parsedVal) {
         parsedVal = min;
@@ -72,7 +78,7 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
       }
       return parsedVal;
     } else {
-      console.log('parsedValue must parse to a number.');
+      /* if the value is invalid, set it to 0 or the min value */
       parsedVal = min || 0;
       return parsedVal;
     }
