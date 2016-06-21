@@ -1,8 +1,7 @@
 {
   "framework": "jasmine2",
-  "src_files": [
-    "counter.js",
-    "test/**/*.test.js"
+  "watch_files": [
+  "test/**/*.test.js"
   ],
   "serve_files": [
     "node_modules/babel-polyfill/dist/polyfill.min.js",

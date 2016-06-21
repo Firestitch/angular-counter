@@ -38,7 +38,7 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
    * i.e. returns NaN, then the min value or 0 will be used instead.
    */
   counterCtrl.setValue = function(val, min, max) {
-    var parsedVal = parseInt(val);
+    var parsedVal = parseInt(val, 10);
     if (!isNaN(parsedVal)) {
       if (min !== undefined && min > parsedVal) {
         parsedVal = min;
