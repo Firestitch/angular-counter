@@ -144,4 +144,31 @@ describe('Counter Directive:', function() {
 
   });
 
+  describe('when step option is specified:', function () {
+    var $scope;
+    beforeEach(function () {
+      $scope = $rootScope.$new();
+      $scope.sample = {
+        value: 5
+      };
+    });
+
+    it('should increment with the step value', function() {
+      var element = $compile('<div fs-counter value="sample.value" step="2"></div>')($scope);
+      var incButton = element[0].querySelectorAll("[data-test-id=inc-button]");
+      angular.element(incButton).triggerHandler('click');
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(7);
+    });
+
+    it('should decrement with the step value', function() {
+      var element = $compile('<div fs-counter value="sample.value" step="2"></div>')($scope);
+      var incButton = element[0].querySelectorAll("[data-test-id=dec-button]");
+      angular.element(incButton).triggerHandler('click');
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(3);
+    });
+
+  });
+
 });
