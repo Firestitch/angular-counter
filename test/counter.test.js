@@ -48,7 +48,7 @@ describe('Counter Directive:', function() {
     });
   });
 
-  describe('when initialized when value is less than min or larger than max:', function () {
+  describe('when initialized with value less than min or larger than max:', function () {
     var $scope;
     beforeEach(function () {
       $scope = $rootScope.$new();
@@ -71,7 +71,7 @@ describe('Counter Directive:', function() {
 
   });
 
-  describe('changing the value functions', function () {
+  describe('when using the plus or minus button', function () {
     var $scope;
     beforeEach(function () {
       $scope = $rootScope.$new();
@@ -121,6 +121,25 @@ describe('Counter Directive:', function() {
       var input = element[0].querySelectorAll("[data-test-id=counter-input]");
       $rootScope.$digest();
       expect(input[0].readonly).toBe(true);
+    });
+
+  });
+
+  describe('when addClass options is specified with class names:', function () {
+    var $scope;
+    beforeEach(function () {
+      $scope = $rootScope.$new();
+      $scope.sample = {
+        value: 5
+      };
+    });
+
+    it('should add the classes to the wrapper', function() {
+      var element = $compile('<div><div fs-counter value="sample.value" addClass="some-class other-class"></div></div>')($scope);
+      var wrapper = element[0].querySelectorAll("[data-test-id=counter-wrapper]");
+      $rootScope.$digest();
+      expect(angular.element(wrapper).hasClass('some-class')).toBe(true);
+      expect(angular.element(wrapper).hasClass('other-class')).toBe(true);
     });
 
   });

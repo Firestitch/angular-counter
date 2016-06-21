@@ -63,7 +63,7 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
             value: '='
         },
         controller: 'counterCtrl as counterCtrl',
-        template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="width">',
+        template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="width" data-test-id="counter-wrapper">',
            '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
               '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
             '</span>',
