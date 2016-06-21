@@ -36,23 +36,41 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   counterCtrl.hello = function () {
     console.log('hey there');
   };
+  counterCtrl.setValue = function(val, min, max) {
+    var parsedVal = parseInt(val);
+    if (!isNaN(parsedVal)) {
+      if (min !== undefined && min > parsedVal) {
+        parsedVal = min;
+        return parsedVal;
+      }
+      if (max !== undefined && max < parsedVal) {
+        parsedVal = max;
+        return parsedVal;
+      }
+      return parsedVal;
+    } else {
+      console.log('parsedValue must parse to a number.');
+      parsedVal = min || 0;
+      return parsedVal;
+    }
+  };
 }]);
 counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         scope: {
-            value: '=value'
+            value: '='
         },
         controller: 'counterCtrl as counterCtrl',
-        template: '<div class="fs-counter input-group" ng-class="addclass" ng-style="width">\
-           <span class="input-group-btn" ng-click="minus()">\
-              <button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>\
-            </span>\
-            <input data-test-id="counter-input" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly">\
-            <span class="input-group-btn" ng-click="plus()">\
-              <button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>\
-            </span>\
-          </div>',
+        template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="width">',
+           '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
+              '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
+            '</span>',
+            '<input data-test-id="counter-input" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly">',
+            '<span class="input-group-btn" ng-click="plus()" data-test-id="inc-button">',
+              '<button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>',
+            '</span>',
+          '</div>'].join(''),
         replace: true,
         link: function(scope, element, attrs, ctrl) {
             var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min)),
