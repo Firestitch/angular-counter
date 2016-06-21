@@ -35,12 +35,15 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   var counterCtrl = this;
 
   counterCtrl.parse = function (n) {
+    n = String(n).trim();
     var invalidInput  = {
       hex: ~String(n).indexOf('0x'),
       falsy: !n && n !== 0,
       isObj: typeof n === 'object'
     };
     return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Math.floor(Number(n));
+    // return (!Array.isArray( n ) && (n - parseFloat( n ) + 1) >= 0) ? Math.floor(Number(n)) : NaN;
+
   };
 
   counterCtrl.isValidNumString = function () {

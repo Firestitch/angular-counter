@@ -25,6 +25,10 @@ describe('Counter Controller:', function() {
       expect(underTest.isValidNumString('0xa')).toBe(false);
       expect(underTest.isValidNumString([])).toBe(false);
       expect(underTest.isValidNumString({})).toBe(false);
+      expect(underTest.isValidNumString(' ')).toBe(false);
+      expect(underTest.isValidNumString('\t\t')).toBe(false);
+      expect(underTest.isValidNumString('\n\r')).toBe(false);
+      expect(underTest.isValidNumString(/[a-z]/)).toBe(false);
       expect(underTest.isValidNumString(null)).toBe(false);
       expect(underTest.isValidNumString('blabla')).toBe(false);
       expect(underTest.isValidNumString('2x')).toBe(false);
