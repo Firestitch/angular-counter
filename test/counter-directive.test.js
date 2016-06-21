@@ -138,7 +138,7 @@ describe('Counter Directive:', function() {
       expect(element.isolateScope().value).toBe(4);
     });
 
-    xit('should not define a min value if the min value is invalid', function() {
+    it('should not define a min value if the min value is invalid', function() {
       $scope.sample.value = 1;
       var element = $compile('<div fs-counter value="sample.value" min="0xa"></div>')($scope);
       var decButton = element[0].querySelectorAll("[data-test-id=dec-button]");
@@ -146,6 +146,16 @@ describe('Counter Directive:', function() {
       angular.element(decButton).triggerHandler('click');
       $rootScope.$digest();
       expect(element.isolateScope().value).toBe(-1);
+    });
+
+    it('should not define a max value if the max value is invalid', function() {
+      $scope.sample.value = 1;
+      var element = $compile('<div fs-counter value="sample.value" min="0" max="0xa"></div>')($scope);
+      var inc = element[0].querySelectorAll("[data-test-id=inc-button]");
+      angular.element(inc).triggerHandler('click');
+      angular.element(inc).triggerHandler('click');
+      $rootScope.$digest();
+      expect(element.isolateScope().value).toBe(3);
     });
 
     it('should not inc the value beyond the max value', function() {

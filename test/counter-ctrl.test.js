@@ -86,8 +86,12 @@ describe('Counter Controller:', function() {
       expect(underTest.setValue('0xa', 1, 100)).toBe(1);
     });
 
-    xit('should do ... if min is NaN', function() {
-      expect(underTest.setValue('5', NaN)).toBe(1);
+    it('should not set min if the value is invalid', function() {
+      expect(underTest.setValue('5', NaN)).toBe(5);
+    });
+
+    it('should not set max if the value is invalid', function() {
+      expect(underTest.setValue('5', 0, NaN)).toBe(5);
     });
 
   });

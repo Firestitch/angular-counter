@@ -42,8 +42,6 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
       isObj: typeof n === 'object'
     };
     return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Math.floor(Number(n));
-    // return (!Array.isArray( n ) && (n - parseFloat( n ) + 1) >= 0) ? Math.floor(Number(n)) : NaN;
-
   };
 
   counterCtrl.isValidNumString = function () {
