@@ -31,6 +31,26 @@ partial / html:
 'use strict';
 
 var counterModule = angular.module('Firestitch.angular-counter', []);
+counterModule.directive('numbersOnly', function () {
+    return {
+        require: 'ngModel',
+        link: function (scope, element, attr, ngModelCtrl) {
+            function fromUser(text) {
+                if (text) {
+                    var transformedInput = text.replace(/[^-0-9\.]/g, '');
+
+                    if (transformedInput !== text) {
+                        ngModelCtrl.$setViewValue(transformedInput);
+                        ngModelCtrl.$render();
+                    }
+                    return transformedInput;
+                }
+                return undefined;
+            }
+            ngModelCtrl.$parsers.push(fromUser);
+        }
+    };
+});
 counterModule.controller('counterCtrl', ['$scope', function ($scope) {
   var counterCtrl = this;
 
@@ -88,52 +108,63 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         scope: {
-            value: '='
+            value: '=',
+            onChange: '&?',
+            noActiveValidate: '=?'
         },
         controller: 'counterCtrl as counterCtrl',
         template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="width" data-test-id="counter-wrapper">',
            '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
               '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
             '</span>',
-            '<input data-test-id="counter-input" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly">',
+            '<input data-test-id="counter-input" numbers-only type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly">',
             '<span class="input-group-btn" ng-click="plus()" data-test-id="inc-button">',
               '<button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>',
             '</span>',
           '</div>'].join(''),
         replace: true,
         link: function(scope, element, attrs, counterCtrl) {
-            var min = (angular.isUndefined(attrs.min) ? void 0 : counterCtrl.parse(attrs.min)),
-                max = (angular.isUndefined(attrs.max) ? void 0 : counterCtrl.parse(attrs.max)),
-                step = (angular.isUndefined(attrs.step) || counterCtrl.parse(attrs.step) === 0 ? 1 : counterCtrl.parse(attrs.step)),
-                changeDelay;
+
+          var options = {
+            step: isNaN(counterCtrl.parse(attrs.step)) ? 1 : counterCtrl.parse(attrs.step),
+            min: counterCtrl.parse(attrs.min),
+            max: counterCtrl.parse(attrs.max)
+          };
 
             /**
              * Confirm the value attribute exists on the element
              */
             if (angular.isUndefined(scope.value)) {
-                throw 'Missing the value attribute on the counter directive.';
+              throw 'Missing the value attribute on the counter directive.';
             }
 
             /**
              * Set some scope wide properties
              */
-            scope.readonly = (angular.isUndefined(attrs.editable) ? true : false);
-            scope.addclass = (angular.isUndefined(attrs.addclass) ? null : attrs.addclass);
-            scope.width = (angular.isUndefined(attrs.width) ? {} : {width:attrs.width});
-            scope.value = counterCtrl.setValue(scope.value, min, max);
+            var defaults = {
+              readonly: true,
+              addclass: null,
+              width: {},
+              value: counterCtrl.setValue(scope.value, options.min, options.max)
+            };
+
+            scope.readonly = 'editable' in attrs ? false : true;
+            scope.addclass = 'addclass' in attrs ? attrs.addclass : null;
+            scope.width = 'width' in attrs ? {width:attrs.width} : {};
+            scope.value = counterCtrl.setValue(scope.value, options.min, options.max);
 
             /**
              * Decrement the value and make sure we stay within the limits, if defined.
              */
             scope.minus = function() {
-                scope.value = counterCtrl.setValue(scope.value - step, min, max);
+                scope.value = counterCtrl.setValue(scope.value - options.step, options.min, options.max);
             };
 
             /**
              * Increment the value and make sure we stay within the limits, if defined.
              */
             scope.plus = function() {
-                scope.value = counterCtrl.setValue(scope.value + step, min, max);
+                scope.value = counterCtrl.setValue(scope.value + options.step, options.min, options.max);
             };
 
             /**
@@ -142,9 +173,14 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
              * that they enter the correct values from within the restrictions.
              */
             scope.changed = function() {
-                changeDelay = $timeout(function (){
-                    scope.value =  counterCtrl.setValue(scope.value, min, max);
-                }, 1000, true);
+              var changeDelay;
+                if (scope.noActiveValidate) {
+                  return;
+                } else {
+                  changeDelay = $timeout(function () {
+                      scope.value =  counterCtrl.setValue(scope.value, options.min, options.max);
+                  }, 1000);
+                }
             };
 
             /**
@@ -153,8 +189,20 @@ counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
              * enter the correct values from within the restrictions.
              */
             scope.blurred = function() {
-                scope.value =  counterCtrl.setValue(scope.value, min, max);
+                scope.value =  counterCtrl.setValue(scope.value, options.min, options.max);
             };
+
+            /**
+             * Watch for change and call the provided callback
+             * if any callback function is provided.
+             */
+            if (scope.onChange && typeof scope.onChange === 'function') {
+              scope.$watch('value', function (newVal, oldVal) {
+                if (newVal !== oldVal) {
+                  scope.onChange();
+                }
+              });
+            }
         }
     };
 }]);
