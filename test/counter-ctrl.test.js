@@ -7,32 +7,33 @@ describe('Counter Controller:', function() {
     underTest = $controller('counterCtrl', { $scope: {} });
   }));
 
+  describe('The `parse` method', function () {
+    it('should convert a string to number and return an integer', function () {
+      expect(underTest.parse('1')).toBe(1);
+      expect(underTest.parse('1.5')).toBe(1);
+      expect(underTest.parse('-1.1')).toBe(-1);
+      expect(underTest.parse('0')).toBe(0);
+      expect(underTest.parse('0.0000005')).toBe(0);
+    });
+    it('should return NaN if the input is not a valid number string', function () {
+      expect(isNaN(underTest.parse('0xa'))).toBe(true);
+      expect(isNaN(underTest.parse('2x'))).toBe(true);
+      expect(isNaN(underTest.parse([]))).toBe(true);
+      expect(isNaN(underTest.parse(' '))).toBe(true);
+      expect(isNaN(underTest.parse('\t\n\r'))).toBe(true);
+      expect(isNaN(underTest.parse(''))).toBe(true);
+      expect(isNaN(underTest.parse(undefined))).toBe(true);
+      expect(isNaN(underTest.parse(null))).toBe(true);
+      expect(isNaN(underTest.parse({}))).toBe(true);
+      expect(isNaN(underTest.parse([]))).toBe(true);
+      expect(isNaN(underTest.parse(/[0-9]/))).toBe(true);
+      expect(isNaN(underTest.parse('00000s0'))).toBe(true);
+      expect(isNaN(underTest.parse('blah'))).toBe(true);
+    });
+  });
+
   describe('The `isValidNumString` method', function () {
-    it('should be valid for valid inputs', function () {
-      expect(underTest.isValidNumString('1')).toBe(true);
-      expect(underTest.isValidNumString('-1')).toBe(true);
-      expect(underTest.isValidNumString(1)).toBe(true);
-      expect(underTest.isValidNumString(-1)).toBe(true);
-      expect(underTest.isValidNumString(0)).toBe(true);
-      expect(underTest.isValidNumString(3.4)).toBe(true);
-    });
-    it('should return false for invalid input', function () {
-      expect(underTest.isValidNumString()).toBe(false);
-      expect(underTest.isValidNumString(undefined)).toBe(false);
-      expect(underTest.isValidNumString('')).toBe(false);
-      expect(underTest.isValidNumString(false)).toBe(false);
-      expect(underTest.isValidNumString(NaN)).toBe(false);
-      expect(underTest.isValidNumString('0xa')).toBe(false);
-      expect(underTest.isValidNumString([])).toBe(false);
-      expect(underTest.isValidNumString({})).toBe(false);
-      expect(underTest.isValidNumString(' ')).toBe(false);
-      expect(underTest.isValidNumString('\t\t')).toBe(false);
-      expect(underTest.isValidNumString('\n\r')).toBe(false);
-      expect(underTest.isValidNumString(/[a-z]/)).toBe(false);
-      expect(underTest.isValidNumString(null)).toBe(false);
-      expect(underTest.isValidNumString('blabla')).toBe(false);
-      expect(underTest.isValidNumString('2x')).toBe(false);
-    });
+
     it('should return false if input is false positive', function () {
       expect(underTest.isValidNumString('0xa')).toBe(false);
     });

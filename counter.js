@@ -39,13 +39,13 @@ counterModule.controller('counterCtrl', ['$scope', function ($scope) {
    * if the input is valid, otherwise, return NaN.
    */
   counterCtrl.parse = function (n) {
-    n = String(n).trim();
+    n = String(n).trim().split('.')[0];
     var invalidInput  = {
       hex: ~String(n).indexOf('0x'),
       falsy: !n && n !== 0,
       isObj: typeof n === 'object'
     };
-    return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Math.floor(Number(n));
+    return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Number(n);
   };
 
   /*
