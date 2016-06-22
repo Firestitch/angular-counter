@@ -1,37 +1,36 @@
 {
-    "name": "angular-counter",
-    "version": "1.0.4",
-    "authors": [
-        "Adam Merrifield <macagp@gmail.com> (http://adam.merrifield.ca)"
-    ],
-    "main": "./counter.js",
-    "description": "AngularJS directive for incrementing a counter form input field",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/Firestitch/angular-counter.git"
-    },
-    "keywords": [
-        "angular",
-        "AngularJS",
-        "counter",
-        "input",
-        "field",
-        "increment"
-    ],
-    "license": "MIT",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ],
-    "dependencies": {
-        "angular":"~1.3.x",
-        "angular-animate":"~1.3.x",
-        "angular-sanitize":"~1.3.x",
-        "angular-touch":"~1.3.x"
-    },
-    "devDependencies": {
-    }
+  "name": "angular-counter",
+  "version": "1.0.6",
+  "authors": [
+    "Adam Merrifield <macagp@gmail.com> (http://adam.merrifield.ca)"
+  ],
+  "main": "./counter.js",
+  "description": "AngularJS directive for incrementing a counter form input field",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Firestitch/angular-counter.git"
+  },
+  "keywords": [
+    "angular",
+    "AngularJS",
+    "counter",
+    "input",
+    "field",
+    "increment"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.3.x",
+    "angular-animate": "~1.3.x",
+    "angular-sanitize": "~1.3.x",
+    "angular-touch": "~1.3.x"
+  },
+  "devDependencies": {}
 }
