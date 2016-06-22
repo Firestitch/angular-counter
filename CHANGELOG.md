@@ -1,5 +1,10 @@
 Version numbers correspond to `bower.json` version
 
+# 1.0.6
+
+- Add unit tests for the directive and the controller
+- Add better number parser for reading string number inputs
+
 # 1.0.4
 
 ## Cleanup

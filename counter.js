@@ -9,7 +9,7 @@
 | Attribute              | Default | Description                                                       |
 | ---------------------- | ------- | ----------------------------------------------------------------- |
 | min/data-min           | null    | A minimum value, never to go below.                               |
-| max/data-max           | null    | A maximum value, never to go above.                               |
+| max/data-min           | null    | A maximum value, never to go above.                               |
 | step/data-step         | 1       | How much to increment/decrement by.                               |
 | addclass/data-addclass | null    | Add a class to the container.                                     |
 | width/data-width       | null    | Set the width of the input field.                                 |
@@ -30,44 +30,82 @@ partial / html:
 
 'use strict';
 
-angular.module('Firestitch.angular-counter', []).directive('fsCounter', ['$timeout', function ($timeout) {
+var counterModule = angular.module('Firestitch.angular-counter', []);
+counterModule.controller('counterCtrl', ['$scope', function ($scope) {
+  var counterCtrl = this;
 
+  /*
+   * Parses the string/number input. Returns an integer
+   * if the input is valid, otherwise, return NaN.
+   */
+  counterCtrl.parse = function (n) {
+    n = String(n).trim().split('.')[0];
+    var invalidInput  = {
+      hex: ~String(n).indexOf('0x'),
+      falsy: !n && n !== 0,
+      isObj: typeof n === 'object'
+    };
+    return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Number(n);
+  };
+
+  /*
+    * checks if the given inputs are valid
+    * number/number strings. If they are valid, return true,
+    * otherwise return false.
+   */
+  counterCtrl.isValidNumString = function () {
+    var vals = [].concat(Array.prototype.slice.call(arguments, 0));
+    return vals.reduce(function (c, val) {
+      var parsedVal = counterCtrl.parse(val);
+      return c && !isNaN(parsedVal);
+    }, vals.length ? true : false);
+  };
+
+  /**
+   * Sets the value as an integer. If the value cannot be parsed,
+   * i.e. returns NaN, then the min value or 0 will be used instead.
+   */
+  counterCtrl.setValue = function(val, min, max) {
+    var parsedVal = counterCtrl.parse(val);
+    if (counterCtrl.isValidNumString(val)) {
+      if (min !== undefined && min > parsedVal) {
+        parsedVal = min;
+        return parsedVal;
+      }
+      if (max !== undefined && max < parsedVal) {
+        parsedVal = max;
+        return parsedVal;
+      }
+      return parsedVal;
+    } else {
+      /* if the value is invalid, set it to 0 or the min value */
+      parsedVal = min || 0;
+      return parsedVal;
+    }
+  };
+}]);
+counterModule.directive('fsCounter', ['$timeout', function ($timeout) {
     return {
         restrict: 'A',
         scope: {
-            value: '=value'
+            value: '='
         },
-        template: '<div class="fs-counter input-group" ng-class="addclass" ng-style="width"><span class="input-group-btn" ng-click="minus()"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button></span><input type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly"><span class="input-group-btn" ng-click="plus()"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></span></div>',
+        controller: 'counterCtrl as counterCtrl',
+        template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="width" data-test-id="counter-wrapper">',
+           '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
+              '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
+            '</span>',
+            '<input data-test-id="counter-input" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly">',
+            '<span class="input-group-btn" ng-click="plus()" data-test-id="inc-button">',
+              '<button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>',
+            '</span>',
+          '</div>'].join(''),
         replace: true,
-        link: function(scope, element, attrs) {
-            var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min)),
-                max = (angular.isUndefined(attrs.max) ? void 0 : parseInt(attrs.max)),
-                step = (angular.isUndefined(attrs.step) || parseInt(attrs.step) === 0 ? 1 : parseInt(attrs.step)),
-                setValue,
+        link: function(scope, element, attrs, counterCtrl) {
+            var min = (angular.isUndefined(attrs.min) ? void 0 : counterCtrl.parse(attrs.min)),
+                max = (angular.isUndefined(attrs.max) ? void 0 : counterCtrl.parse(attrs.max)),
+                step = (angular.isUndefined(attrs.step) || counterCtrl.parse(attrs.step) === 0 ? 1 : counterCtrl.parse(attrs.step)),
                 changeDelay;
-
-            /**
-             * Sets the value as an integer. If the value cannot be parsed,
-             * i.e. returns NaN, then the min value or 0 will be used instead.
-             */
-            setValue = function(val) {
-                var parsedVal = parseInt(val);
-                if (!isNaN(parsedVal)) {
-                    if (min !== undefined && min > parsedVal) {
-                        parsedVal = min;
-                        return parsedVal;
-                    }
-                    if (max !== undefined && max < parsedVal) {
-                        parsedVal = max;
-                        return parsedVal;
-                    }
-                    return parsedVal;
-                } else {
-                    console.log('parsedValue must parse to a number.');
-                    parsedVal = min || 0;
-                    return parsedVal;
-                }
-            };
 
             /**
              * Confirm the value attribute exists on the element
@@ -82,20 +120,20 @@ angular.module('Firestitch.angular-counter', []).directive('fsCounter', ['$timeo
             scope.readonly = (angular.isUndefined(attrs.editable) ? true : false);
             scope.addclass = (angular.isUndefined(attrs.addclass) ? null : attrs.addclass);
             scope.width = (angular.isUndefined(attrs.width) ? {} : {width:attrs.width});
-            scope.value = setValue(scope.value);
+            scope.value = counterCtrl.setValue(scope.value, min, max);
 
             /**
              * Decrement the value and make sure we stay within the limits, if defined.
              */
             scope.minus = function() {
-                scope.value = setValue(scope.value - step);
+                scope.value = counterCtrl.setValue(scope.value - step, min, max);
             };
 
             /**
              * Increment the value and make sure we stay within the limits, if defined.
              */
             scope.plus = function() {
-                scope.value = setValue(scope.value + step);
+                scope.value = counterCtrl.setValue(scope.value + step, min, max);
             };
 
             /**
@@ -105,7 +143,7 @@ angular.module('Firestitch.angular-counter', []).directive('fsCounter', ['$timeo
              */
             scope.changed = function() {
                 changeDelay = $timeout(function (){
-                    scope.value =  setValue(scope.value);
+                    scope.value =  counterCtrl.setValue(scope.value, min, max);
                 }, 1000, true);
             };
 
@@ -115,7 +153,7 @@ angular.module('Firestitch.angular-counter', []).directive('fsCounter', ['$timeo
              * enter the correct values from within the restrictions.
              */
             scope.blurred = function() {
-                scope.value =  setValue(scope.value);
+                scope.value =  counterCtrl.setValue(scope.value, min, max);
             };
         }
     };
