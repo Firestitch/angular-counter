@@ -100,7 +100,7 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
         '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
           '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
         '</span>',
-        '<form name="counterForm"><input data-test-id="counter-input" name="counter" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="editable !== \'\' "></form>',
+        '<form name="counterForm" style="display: inline"><input data-test-id="counter-input" name="counter" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="editable !== \'\' "></form>',
         '<span class="input-group-btn" ng-click="plus()" data-test-id="inc-button">',
           '<button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>',
         '</span>',
