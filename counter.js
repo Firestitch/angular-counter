@@ -42,8 +42,8 @@ counterModule.controller('counterCtrl', ['$scope', function($scope) {
   counterCtrl.parse = function(n) {
     n = String(n).trim().split('.')[0];
     var invalidInput = {
-      hex: ~String(n).indexOf('0x'),
-      falsy: !n && n !== 0,
+      hex: ~n.indexOf('0x'),
+      falsy: !n,
       isObj: typeof n === 'object'
     };
     return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Number(n);
@@ -93,7 +93,7 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
       value: '=',
       onChange: '&?',
       noActiveValidate: '=?',
-      pattern: '@?'
+      digitPattern: '@?'
     },
     controller: 'counterCtrl as counterCtrl',
     template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="{width: width}" data-test-id="counter-wrapper">',
@@ -108,9 +108,6 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
     ].join(''),
     replace: true,
     link: function(scope, element, attrs, counterCtrl) {
-
-
-
       /**
        * Configuration for min/max/step.
        */
@@ -130,21 +127,21 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
       /**
        * Set some scope wide properties
        */
-      var defaults = {
+      var scOptions = {
         editable: false,
         addclass: null,
-        width: {},
+        width: '100%',
         digitPattern: '[^-0-9\.]',
         noActiveValidate: true
       };
-      Object.keys(defaults).forEach(function(key) {
+      Object.keys(scOptions).forEach(function(key) {
         if (key in attrs) {
-          defaults[key] = attrs[key];
+          scOptions[key] = attrs[key];
         }
       });
 
       /** Set up data and methods on scope. */
-      angular.extend(scope, defaults, {
+      angular.extend(scope, scOptions, {
         /**
          * Initialize the value model.
          */
@@ -190,7 +187,7 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
         }
       });
 
-      /* Enable only number chracters */
+      /* Do not allow characters specefied by the RegEx */
       var ngModelCtrl = scope.counterForm.counter;
       function fromUser(text) {
         if (text) {
@@ -208,7 +205,6 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
 
       /**
        * Watch for change and call the provided callback
-       * if any callback function is provided.
        */
       if (scope.onChange && typeof scope.onChange === 'function') {
         scope.$watch('value', function(newVal, oldVal) {

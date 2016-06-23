@@ -10,9 +10,13 @@ describe('Counter Controller:', function() {
   describe('The `parse` method', function () {
     it('should convert a string to number and return an integer', function () {
       expect(underTest.parse('1')).toBe(1);
+      expect(underTest.parse(1)).toBe(1);
       expect(underTest.parse('1.5')).toBe(1);
+      expect(underTest.parse(1.5)).toBe(1);
       expect(underTest.parse('-1.1')).toBe(-1);
+      expect(underTest.parse(-1.1)).toBe(-1);
       expect(underTest.parse('0')).toBe(0);
+      expect(underTest.parse(0)).toBe(0);
       expect(underTest.parse('0.0000005')).toBe(0);
     });
     it('should return NaN if the input is not a valid number string', function () {
