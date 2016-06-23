@@ -1,0 +1,16 @@
+{
+  "framework": "jasmine2",
+  "watch_files": [
+  "test/**/*.test.js"
+  ],
+  "serve_files": [
+    "node_modules/babel-polyfill/dist/polyfill.min.js",
+    "bower_components/angular/angular.js",
+    "bower_components/angular-mocks/angular-mocks.js",
+    "test-helper.js",
+    "counter.js",
+    "test/**/*.test.js"
+  ],
+  "launch_in_dev": ["Chrome", "PhantomJS"],
+  "launch_in_ci": ["PhantomJS"]
+}

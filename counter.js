@@ -30,93 +30,189 @@ partial / html:
 
 'use strict';
 
-angular.module('Firestitch.angular-counter', []).directive('fsCounter', ['$timeout', function ($timeout) {
+var counterModule = angular.module('Firestitch.angular-counter', []);
 
-    return {
-        restrict: 'A',
-        scope: {
-            value: '=value'
-        },
-        template: '<div class="fs-counter input-group" ng-class="addclass" ng-style="width"><span class="input-group-btn" ng-click="minus()"><button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button></span><input type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="readonly"><span class="input-group-btn" ng-click="plus()"><button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></span></div>',
-        replace: true,
-        link: function(scope, element, attrs) {
-            var min = (angular.isUndefined(attrs.min) ? void 0 : parseInt(attrs.min)),
-                max = (angular.isUndefined(attrs.max) ? void 0 : parseInt(attrs.max)),
-                step = (angular.isUndefined(attrs.step) || parseInt(attrs.step) === 0 ? 1 : parseInt(attrs.step)),
-                setValue,
-                changeDelay;
+counterModule.controller('counterCtrl', ['$scope', function($scope) {
+  var counterCtrl = this;
 
-            /**
-             * Sets the value as an integer. If the value cannot be parsed,
-             * i.e. returns NaN, then the min value or 0 will be used instead.
-             */
-            setValue = function(val) {
-                var parsedVal = parseInt(val);
-                if (!isNaN(parsedVal)) {
-                    if (min !== undefined && min > parsedVal) {
-                        parsedVal = min;
-                        return parsedVal;
-                    }
-                    if (max !== undefined && max < parsedVal) {
-                        parsedVal = max;
-                        return parsedVal;
-                    }
-                    return parsedVal;
-                } else {
-                    console.log('parsedValue must parse to a number.');
-                    parsedVal = min || 0;
-                    return parsedVal;
-                }
-            };
-
-            /**
-             * Confirm the value attribute exists on the element
-             */
-            if (angular.isUndefined(scope.value)) {
-                throw 'Missing the value attribute on the counter directive.';
-            }
-
-            /**
-             * Set some scope wide properties
-             */
-            scope.readonly = (angular.isUndefined(attrs.editable) ? true : false);
-            scope.addclass = (angular.isUndefined(attrs.addclass) ? null : attrs.addclass);
-            scope.width = (angular.isUndefined(attrs.width) ? {} : {width:attrs.width});
-            scope.value = setValue(scope.value);
-
-            /**
-             * Decrement the value and make sure we stay within the limits, if defined.
-             */
-            scope.minus = function() {
-                scope.value = setValue(scope.value - step);
-            };
-
-            /**
-             * Increment the value and make sure we stay within the limits, if defined.
-             */
-            scope.plus = function() {
-                scope.value = setValue(scope.value + step);
-            };
-
-            /**
-             * This is only triggered 1 second after a field is manually edited
-             * by the user. Where we can perform some validation and make sure
-             * that they enter the correct values from within the restrictions.
-             */
-            scope.changed = function() {
-                changeDelay = $timeout(function (){
-                    scope.value =  setValue(scope.value);
-                }, 1000, true);
-            };
-
-            /**
-             * This is only triggered when user leaves a manually edited field.
-             * Where we can perform some validation and make sure that they
-             * enter the correct values from within the restrictions.
-             */
-            scope.blurred = function() {
-                scope.value =  setValue(scope.value);
-            };
-        }
+  /*
+   * Parses the string/number input. Returns an integer
+   * if the input is valid, otherwise, return NaN.
+   */
+  counterCtrl.parse = function(n) {
+    n = String(n).trim().split('.')[0];
+    var invalidInput = {
+      hex: ~n.indexOf('0x'),
+      falsy: !n,
+      isObj: typeof n === 'object'
     };
+    return (invalidInput.hex || invalidInput.falsy || invalidInput.isObj) ? NaN : Number(n);
+  };
+
+  /*
+   * checks if the given inputs are valid
+   * number/number strings. If they are valid, return true,
+   * otherwise return false.
+   */
+  counterCtrl.isValidNumString = function() {
+    var vals = [].concat(Array.prototype.slice.call(arguments, 0));
+    return vals.reduce(function(c, val) {
+      var parsedVal = counterCtrl.parse(val);
+      return c && !isNaN(parsedVal);
+    }, vals.length ? true : false);
+  };
+
+  /**
+   * Sets the value as an integer. If the value cannot be parsed,
+   * i.e. returns NaN, then the min value or 0 will be used instead.
+   */
+  counterCtrl.setValue = function(val, min, max) {
+    var parsedVal = counterCtrl.parse(val);
+    if (counterCtrl.isValidNumString(val)) {
+      if (min !== undefined && min > parsedVal) {
+        parsedVal = min;
+        return parsedVal;
+      }
+      if (max !== undefined && max < parsedVal) {
+        parsedVal = max;
+        return parsedVal;
+      }
+      return parsedVal;
+    } else {
+      /* if the value is invalid, set it to 0 or the min value */
+      parsedVal = min || 0;
+      return parsedVal;
+    }
+  };
+}]);
+
+counterModule.directive('fsCounter', ['$timeout', function($timeout) {
+  return {
+    restrict: 'A',
+    scope: {
+      value: '=',
+      onChange: '&?',
+      noActiveValidate: '=?',
+      digitPattern: '@?'
+    },
+    controller: 'counterCtrl as counterCtrl',
+    template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="{width: width}" data-test-id="counter-wrapper">',
+        '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
+          '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
+        '</span>',
+        '<form name="counterForm" style="display: inline"><input data-test-id="counter-input" name="counter" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="editable !== \'\' "></form>',
+        '<span class="input-group-btn" ng-click="plus()" data-test-id="inc-button">',
+          '<button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>',
+        '</span>',
+      '</div>'
+    ].join(''),
+    replace: true,
+    link: function(scope, element, attrs, counterCtrl) {
+      /**
+       * Configuration for min/max/step.
+       */
+      var config = {
+        step: isNaN(counterCtrl.parse(attrs.step)) ? 1 : counterCtrl.parse(attrs.step),
+        min: counterCtrl.parse(attrs.min),
+        max: counterCtrl.parse(attrs.max)
+      };
+
+      /**
+       * Confirm the value attribute exists on the element
+       */
+      if (typeof scope.value === 'undefined') {
+        throw 'Missing the value attribute on the counter directive.';
+      }
+
+      /**
+       * Set some scope wide properties
+       */
+      var scOptions = {
+        editable: false,
+        addclass: null,
+        width: '100%',
+        digitPattern: '[^-0-9\.]',
+        noActiveValidate: true
+      };
+      Object.keys(scOptions).forEach(function(key) {
+        if (key in attrs) {
+          scOptions[key] = attrs[key];
+        }
+      });
+
+      /** Set up data and methods on scope. */
+      angular.extend(scope, scOptions, {
+        /**
+         * Initialize the value model.
+         */
+        value: counterCtrl.setValue(scope.value, config.min, config.max),
+
+        /**
+         * Decrement the value and make sure we stay within the limits, if defined.
+         */
+        minus: function() {
+          scope.value = counterCtrl.setValue(scope.value - config.step, config.min, config.max);
+        },
+
+        /**
+         * Increment the value and make sure we stay within the limits, if defined.
+         */
+        plus: function() {
+          scope.value = counterCtrl.setValue(scope.value + config.step, config.min, config.max);
+        },
+
+        /**
+         * This is only triggered 1 second after a field is manually edited
+         * by the user. Where we can perform some validation and make sure
+         * that they enter the correct values from within the restrictions.
+         */
+        changed: function() {
+          var changeDelay;
+          if (scope.noActiveValidate === '') {
+            return;
+          } else {
+            changeDelay = $timeout(function() {
+              scope.value = counterCtrl.setValue(scope.value, config.min, config.max);
+            }, 1000);
+          }
+        },
+
+        /**
+         * This is only triggered when user leaves a manually edited field.
+         * Where we can perform some validation and make sure that they
+         * enter the correct values from within the restrictions.
+         */
+        blurred: function() {
+          scope.value = counterCtrl.setValue(scope.value, config.min, config.max);
+        }
+      });
+
+      /* Do not allow characters specefied by the RegEx */
+      var ngModelCtrl = scope.counterForm.counter;
+      function fromUser(text) {
+        if (text) {
+          var pattern = new RegExp(scope.digitPattern, 'g');
+          var transformedInput = text.replace(pattern, '');
+          if (transformedInput !== text) {
+            ngModelCtrl.$setViewValue(transformedInput);
+            ngModelCtrl.$render();
+          }
+          return transformedInput;
+        }
+        return undefined;
+      }
+      ngModelCtrl.$parsers.push(fromUser);
+
+      /**
+       * Watch for change and call the provided callback
+       */
+      if (scope.onChange && typeof scope.onChange === 'function') {
+        scope.$watch('value', function(newVal, oldVal) {
+          if (newVal !== oldVal) {
+            scope.onChange();
+          }
+        });
+      }
+    }
+  };
 }]);
