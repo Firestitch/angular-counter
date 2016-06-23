@@ -32,27 +32,6 @@ partial / html:
 
 var counterModule = angular.module('Firestitch.angular-counter', []);
 
-counterModule.directive('numbersOnly', function() {
-  return {
-    require: 'ngModel',
-    link: function(scope, element, attr, ngModelCtrl) {
-      function fromUser(text) {
-        if (text) {
-          var transformedInput = text.replace(/[^-0-9\.]/g, '');
-
-          if (transformedInput !== text) {
-            ngModelCtrl.$setViewValue(transformedInput);
-            ngModelCtrl.$render();
-          }
-          return transformedInput;
-        }
-        return undefined;
-      }
-      ngModelCtrl.$parsers.push(fromUser);
-    }
-  };
-});
-
 counterModule.controller('counterCtrl', ['$scope', function($scope) {
   var counterCtrl = this;
 
@@ -113,14 +92,15 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
     scope: {
       value: '=',
       onChange: '&?',
-      noActiveValidate: '=?'
+      noActiveValidate: '=?',
+      pattern: '@?'
     },
     controller: 'counterCtrl as counterCtrl',
     template: ['<div class="fs-counter input-group" ng-class="addclass" ng-style="{width: width}" data-test-id="counter-wrapper">',
         '<span class="input-group-btn" ng-click="minus()" data-test-id="dec-button">',
           '<button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button>',
         '</span>',
-        '<input data-test-id="counter-input" numbers-only type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="editable !== \'\' ">',
+        '<form name="counterForm"><input data-test-id="counter-input" name="counter" type="text" class="form-control text-center" ng-model="value" ng-blur="blurred()" ng-change="changed()" ng-readonly="editable !== \'\' "></form>',
         '<span class="input-group-btn" ng-click="plus()" data-test-id="inc-button">',
           '<button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>',
         '</span>',
@@ -128,6 +108,8 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
     ].join(''),
     replace: true,
     link: function(scope, element, attrs, counterCtrl) {
+
+
 
       /**
        * Configuration for min/max/step.
@@ -151,7 +133,9 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
       var defaults = {
         editable: false,
         addclass: null,
-        width: {}
+        width: {},
+        digitPattern: '[^-0-9\.]',
+        noActiveValidate: true
       };
       Object.keys(defaults).forEach(function(key) {
         if (key in attrs) {
@@ -187,7 +171,7 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
          */
         changed: function() {
           var changeDelay;
-          if (scope.noActiveValidate) {
+          if (scope.noActiveValidate === '') {
             return;
           } else {
             changeDelay = $timeout(function() {
@@ -205,6 +189,22 @@ counterModule.directive('fsCounter', ['$timeout', function($timeout) {
           scope.value = counterCtrl.setValue(scope.value, config.min, config.max);
         }
       });
+
+      /* Enable only number chracters */
+      var ngModelCtrl = scope.counterForm.counter;
+      function fromUser(text) {
+        if (text) {
+          var pattern = new RegExp(scope.digitPattern, 'g');
+          var transformedInput = text.replace(pattern, '');
+          if (transformedInput !== text) {
+            ngModelCtrl.$setViewValue(transformedInput);
+            ngModelCtrl.$render();
+          }
+          return transformedInput;
+        }
+        return undefined;
+      }
+      ngModelCtrl.$parsers.push(fromUser);
 
       /**
        * Watch for change and call the provided callback
