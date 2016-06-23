@@ -1,5 +1,11 @@
 Version numbers correspond to `bower.json` version
 
+# 1.0.7
+
+- Disallow characters given a RegEx
+- Provide option to disable active validation while typing
+- Simplify options and settings
+
 # 1.0.6
 
 - Add unit tests for the directive and the controller
